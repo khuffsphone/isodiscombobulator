@@ -1,0 +1,20 @@
+{
+  "name": "@romlab/cli",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "romlab": "./dist/bin.js"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "@romlab/core": "0.2.0",
+    "@romlab/emulator": "0.2.0",
+    "@romlab/platform-genesis": "0.2.0",
+    "@romlab/schema": "0.2.0"
+  }
+}

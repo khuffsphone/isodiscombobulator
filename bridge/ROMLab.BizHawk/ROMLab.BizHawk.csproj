@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- BizHawk 2.9.x external tools target .NET Framework 4.8 and load into
+         the EmuHawk process, so this must match the host runtime exactly. -->
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>ROMLab.BizHawk</AssemblyName>
+    <RootNamespace>ROMLab.BizHawk</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+
+    <!-- Point this at the pinned BizHawk install, e.g.
+         dotnet build -p:BizHawkDir="C:\BizHawk-2.9.1" -->
+    <BizHawkDir Condition="'$(BizHawkDir)' == ''">$(MSBuildThisFileDirectory)..\..\..\BizHawk-2.9.1</BizHawkDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="BizHawk.Client.Common">
+      <HintPath>$(BizHawkDir)\dll\BizHawk.Client.Common.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="BizHawk.Client.EmuHawk">
+      <HintPath>$(BizHawkDir)\EmuHawk.exe</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="BizHawk.Common">
+      <HintPath>$(BizHawkDir)\dll\BizHawk.Common.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="BizHawk.Emulation.Common">
+      <HintPath>$(BizHawkDir)\dll\BizHawk.Emulation.Common.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(BizHawkDir)\dll\Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
