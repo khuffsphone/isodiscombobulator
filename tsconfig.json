@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/schema" },
+    { "path": "packages/core" },
+    { "path": "packages/platform-genesis" },
+    { "path": "packages/emulator" },
+    { "path": "packages/cli" }
+  ]
+}

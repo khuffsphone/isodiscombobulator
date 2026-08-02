@@ -1,0 +1,26 @@
+{
+  "name": "romlab",
+  "version": "0.2.0",
+  "private": true,
+  "description": "ROMLab AI — runtime-first ROM investigation, capture and comparison workspace",
+  "type": "module",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "tsc -b --clean",
+    "typecheck": "tsc -b",
+    "pretest": "npm run build",
+    "test": "node --disable-warning=ExperimentalWarning --test --test-reporter=spec \"packages/*/dist/**/*.test.js\"",
+    "verify": "npm run typecheck && npm test",
+    "romlab": "node --disable-warning=ExperimentalWarning packages/cli/dist/bin.js"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "~5.7.2"
+  }
+}

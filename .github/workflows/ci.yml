@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+env:
+  BIZHAWK_VERSION: 2.9.1
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # node:sqlite backs the workspace store and needs Node >= 22.5.
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck and build
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: End-to-end smoke test on a synthetic cartridge
+        run: node scripts/smoke.mjs
+
+  bridge:
+    # Compiles the BizHawk external tool against the pinned BizHawk assemblies.
+    # This cannot prove the bridge behaves correctly inside EmuHawk, but it does
+    # prove every ApiHawk call it makes still exists with the signature it
+    # expects — which is the failure mode that would otherwise only surface on a
+    # Windows machine during a capture session.
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0'
+
+      - name: Cache BizHawk ${{ env.BIZHAWK_VERSION }}
+        id: bizhawk-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/bizhawk
+          key: bizhawk-${{ env.BIZHAWK_VERSION }}-win-x64
+
+      - name: Download BizHawk ${{ env.BIZHAWK_VERSION }}
+        if: steps.bizhawk-cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p ~/bizhawk
+          curl -sSL -o /tmp/bizhawk.zip \
+            "https://github.com/TASEmulators/BizHawk/releases/download/${BIZHAWK_VERSION}/BizHawk-${BIZHAWK_VERSION}-win-x64.zip"
+          unzip -q /tmp/bizhawk.zip -d ~/bizhawk
+
+      - name: Build ROMLab.BizHawk
+        run: |
+          dotnet build bridge/ROMLab.BizHawk/ROMLab.BizHawk.csproj \
+            -c Release \
+            -p:BizHawkDir="$HOME/bizhawk" \
+            -warnaserror
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ROMLab.BizHawk
+          path: bridge/ROMLab.BizHawk/bin/Release/net48/ROMLab.BizHawk.dll
+          if-no-files-found: error

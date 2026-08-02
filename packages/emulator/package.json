@@ -1,0 +1,16 @@
+{
+  "name": "@romlab/emulator",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "@romlab/core": "0.2.0",
+    "@romlab/platform-genesis": "0.2.0",
+    "@romlab/schema": "0.2.0"
+  }
+}

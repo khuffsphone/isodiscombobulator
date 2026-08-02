@@ -1,0 +1,25 @@
+node_modules/
+dist/
+*.tsbuildinfo
+
+# .NET build output (bridge/ROMLab.BizHawk)
+bin/
+obj/
+
+# ROMLab never tracks operator ROMs, savestates, captures or extracted media.
+artifacts/
+private-repro/
+workspaces/
+# NOTE: Mega Drive ROMs also use `.md`, which collides with Markdown docs.
+# Keep operator ROMs out of the tree by path (artifacts/, private-repro/) instead.
+*.bin
+*.gen
+*.smd
+*.z64
+*.sfc
+*.nes
+*.gb
+*.gba
+*.bk2
+*.state
+*.wav
