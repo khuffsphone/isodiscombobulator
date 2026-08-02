@@ -61,7 +61,18 @@ export interface EmulatorStatus {
   emulatorVersion: string;
   core: string;
   coreVersion?: string;
+  /**
+   * SHA-256 of the normalised ROM image, as ROMLab computes it.
+   *
+   * Empty when the bridge could not determine it — ApiHawk exposes no way to
+   * recover the path of the ROM EmuHawk loaded, so the launcher must supply it
+   * (see `ROMLAB_ROM_PATH`). An empty value fails the identity check, which is
+   * the intended outcome: an unattributable capture is not evidence.
+   */
   romSha256: string;
+  /** BizHawk's own database identity. Diagnostics only — never an identity check. */
+  gameName?: string;
+  gameHash?: string;
   frame: number;
   paused: boolean;
 }

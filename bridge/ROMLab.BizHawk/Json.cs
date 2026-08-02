@@ -31,6 +31,9 @@ namespace ROMLab.BizHawk
         public string Core { get; set; } = string.Empty;
         public string? CoreVersion { get; set; }
         public string RomSha256 { get; set; } = string.Empty;
+        /// <summary>Diagnostics only — BizHawk's database identity, not ROMLab's.</summary>
+        public string? GameName { get; set; }
+        public string? GameHash { get; set; }
         public int Frame { get; set; }
         public bool Paused { get; set; }
     }
@@ -79,6 +82,8 @@ namespace ROMLab.BizHawk
                         core = status.Core,
                         coreVersion = status.CoreVersion,
                         romSha256 = status.RomSha256,
+                        gameName = status.GameName,
+                        gameHash = status.GameHash,
                         frame = status.Frame,
                         paused = status.Paused,
                     },

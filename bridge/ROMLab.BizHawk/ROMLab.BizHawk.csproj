@@ -1,40 +1,57 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- BizHawk 2.9.x external tools target .NET Framework 4.8 and load into
-         the EmuHawk process, so this must match the host runtime exactly. -->
+    <!-- BizHawk 2.9.1's EmuHawk.exe is .NET Framework 4.8 and external tools
+         load into that process, so this must match the host runtime exactly.
+         (Verified against the shipped EmuHawk.exe.config and assembly metadata.) -->
     <TargetFramework>net48</TargetFramework>
     <AssemblyName>ROMLab.BizHawk</AssemblyName>
     <RootNamespace>ROMLab.BizHawk</RootNamespace>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
-    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <AssemblyVersion>0.2.0.0</AssemblyVersion>
+    <FileVersion>0.2.0.0</FileVersion>
 
     <!-- Point this at the pinned BizHawk install, e.g.
-         dotnet build -p:BizHawkDir="C:\BizHawk-2.9.1" -->
+         dotnet build -p:BizHawkDir=/path/to/BizHawk-2.9.1 -->
     <BizHawkDir Condition="'$(BizHawkDir)' == ''">$(MSBuildThisFileDirectory)..\..\..\BizHawk-2.9.1</BizHawkDir>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Lets net48 build on Linux/macOS CI without a Windows SDK. -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="BizHawk.Client.Common">
-      <HintPath>$(BizHawkDir)\dll\BizHawk.Client.Common.dll</HintPath>
+      <HintPath>$(BizHawkDir)/dll/BizHawk.Client.Common.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="BizHawk.Client.EmuHawk">
-      <HintPath>$(BizHawkDir)\EmuHawk.exe</HintPath>
+      <HintPath>$(BizHawkDir)/EmuHawk.exe</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="BizHawk.Common">
-      <HintPath>$(BizHawkDir)\dll\BizHawk.Common.dll</HintPath>
+      <HintPath>$(BizHawkDir)/dll/BizHawk.Common.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="BizHawk.Emulation.Common">
-      <HintPath>$(BizHawkDir)\dll\BizHawk.Emulation.Common.dll</HintPath>
+      <HintPath>$(BizHawkDir)/dll/BizHawk.Emulation.Common.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>$(BizHawkDir)\dll\Newtonsoft.Json.dll</HintPath>
+      <HintPath>$(BizHawkDir)/dll/Newtonsoft.Json.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

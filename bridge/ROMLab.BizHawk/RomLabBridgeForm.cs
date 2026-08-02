@@ -11,6 +11,8 @@ using System.Windows.Forms;
 
 using BizHawk.Client.Common;
 using BizHawk.Client.EmuHawk;
+using BizHawk.Common;
+using BizHawk.Emulation.Common;
 
 namespace ROMLab.BizHawk
 {
@@ -178,6 +180,8 @@ namespace ROMLab.BizHawk
             switch (request.Op)
             {
                 case "status":
+                {
+                    var game = CurrentGame();
                     return Json.Status(id, CurrentFrame, new EmulatorStatus
                     {
                         Emulator = "BizHawk",
@@ -185,9 +189,15 @@ namespace ROMLab.BizHawk
                         Core = Apis.Emulation.GetSystemId(),
                         CoreVersion = Apis.Emulation.GetBoardName(),
                         RomSha256 = _romSha256,
+                        // Reported for diagnostics only. This is BizHawk's own
+                        // database hash, not ROMLab's identity, so it must never
+                        // be substituted for RomSha256.
+                        GameName = game?.Name,
+                        GameHash = game?.Hash,
                         Frame = CurrentFrame,
                         Paused = Apis.EmuClient.IsPaused(),
                     });
+                }
 
                 case "reset":
                     Apis.EmuClient.RebootCore();
@@ -217,6 +227,24 @@ namespace ROMLab.BizHawk
                 case "readDomain":
                 {
                     var domain = request.Domain;
+                    var available = Apis.Memory.GetMemoryDomainList();
+
+                    // A typo in a domain name would otherwise surface as an
+                    // opaque core exception. Name the domains this core actually
+                    // has, because they differ between Genesis cores.
+                    if (!available.Contains(domain))
+                    {
+                        return Json.Error(id, "unknown_domain",
+                            $"Core \"{Apis.Emulation.GetSystemId()}\" has no memory domain \"{domain}\". Available: {string.Join(", ", available)}");
+                    }
+
+                    var size = Apis.Memory.GetMemoryDomainSize(domain);
+                    if (request.Start < 0 || request.Start + request.Length > size)
+                    {
+                        return Json.Error(id, "domain_range_out_of_bounds",
+                            $"Requested {request.Start}+{request.Length} exceeds \"{domain}\" size {size}.");
+                    }
+
                     var bytes = Apis.Memory.ReadByteRange(request.Start, request.Length, domain);
                     return Json.Domain(id, CurrentFrame, domain, request.Start, Convert.ToBase64String(bytes.ToArray()));
                 }
@@ -276,11 +304,29 @@ namespace ROMLab.BizHawk
             return Path.Combine(directory, safe + ".State");
         }
 
+        /// <summary>
+        /// ROMLab's identity is the SHA-256 of the normalised image, and ApiHawk
+        /// exposes no way to recover the path of the ROM EmuHawk loaded — the
+        /// only identity it offers is <c>IGameInfo.Hash</c>, which is BizHawk's
+        /// own database hash in BizHawk's own format and is not comparable.
+        ///
+        /// So the path is passed in by whoever started the emulator, via
+        /// ROMLAB_ROM_PATH. When it is absent the bridge reports an empty hash
+        /// rather than guessing, and the client refuses to attach — which is the
+        /// correct outcome: captures that cannot be attributed to a known
+        /// cartridge are not evidence.
+        /// </summary>
         private string ComputeRomSha256()
         {
-            var path = Apis.EmuClient.GetRomPath();
+            var path = Environment.GetEnvironmentVariable("ROMLAB_ROM_PATH");
             if (string.IsNullOrEmpty(path) || !File.Exists(path)) return string.Empty;
-            return Sha256File(path);
+            return Sha256File(path!);
+        }
+
+        private IGameInfo? CurrentGame()
+        {
+            try { return Apis.Emulation.GetGameInfo(); }
+            catch { return null; }
         }
 
         private static string Sha256File(string path)

@@ -51,7 +51,7 @@ Requires Node 22.5+ (the workspace store uses the built-in `node:sqlite`).
 
 ```bash
 npm ci
-npm run verify          # typecheck, build, 89 tests across 19 suites
+npm run verify          # typecheck, build, 95 tests across 20 suites
 node scripts/smoke.mjs  # full CLI loop against a synthetic cartridge
 ```
 
@@ -128,13 +128,16 @@ Working and tested:
 - The bridge wire protocol, tested against a fake bridge over real TCP
 - The deterministic mock adapter and the whole capture → reconstruct → report loop
 - Export boundary enforcement
+- The C# BizHawk external tool **compiles cleanly against BizHawk 2.9.1** with
+  warnings as errors, on every CI run — so every ApiHawk call it makes is known
+  to exist with the signature it expects
 
 Not yet verified:
 
-- **The C# BizHawk external tool has not been compiled or run.** It is written
-  against the BizHawk 2.9.1 ApiHawk surface and needs a Windows build plus a live
-  smoke test before any BizHawk capture can honestly be called runtime evidence.
-  See `bridge/README.md` for the verification checklist.
+- **The bridge has not been run inside a live EmuHawk.** Frame-advance
+  determinism, savestate round-tripping and memory-domain correctness all need a
+  Windows machine before any BizHawk capture can honestly be called runtime
+  evidence. See `bridge/README.md` for the remaining checklist.
 - Audio capture returns `not_implemented` rather than a silent buffer, because a
   fabricated "recorded sound event" in the ledger is worse than a gap.
 - No Electron shell yet; the CLI is the interface.
@@ -144,7 +147,8 @@ Not yet verified:
 
 ## Next
 
-1. Build and smoke-test the C# bridge on Windows against pinned BizHawk 2.9.1.
+1. Run the bridge inside a live EmuHawk on Windows and work the
+   `bridge/README.md` checklist.
 2. Emit synchronised screenshot, VRAM, CRAM, VSRAM, sprite-table, RAM, input,
    savestate and WAV artifacts under `romlab.capture.v1`.
 3. Plane/layer separation so ring, crowd, HUD and fighters are catalogued apart.

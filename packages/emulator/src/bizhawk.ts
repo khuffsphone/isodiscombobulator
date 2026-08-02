@@ -64,6 +64,23 @@ export class BizHawkAdapter implements EmulatorAdapter {
 
     if (status.romSha256 !== options.romSha256) {
       await this.disconnect();
+
+      // An empty hash is a distinct failure from a wrong one: the bridge could
+      // not determine what is loaded at all. ApiHawk cannot report the loaded
+      // ROM's path, so ROMLab supplies it through ROMLAB_ROM_PATH when it
+      // launches EmuHawk. Attaching to an emulator someone else started skips
+      // that step, which is the usual cause.
+      if (status.romSha256 === '') {
+        throw new EmulatorError(
+          'The ROMLab bridge could not determine which ROM is loaded' +
+            (status.gameName ? ` (BizHawk reports "${status.gameName}")` : '') +
+            '. Launch EmuHawk through ROMLab (pass --bizhawk), or set ROMLAB_ROM_PATH ' +
+            'in its environment before opening the tool. ROMLab will not attribute ' +
+            'captures to an unverified cartridge.',
+          'rom_identity_unknown',
+        );
+      }
+
       throw new RomIdentityMismatch(options.romSha256, status.romSha256);
     }
 
@@ -125,7 +142,14 @@ export class BizHawkAdapter implements EmulatorAdapter {
     this.process = spawn(executablePath, args, {
       stdio: 'ignore',
       detached: false,
-      env: { ...process.env, ROMLAB_BRIDGE_PORT: String(port) },
+      env: {
+        ...process.env,
+        ROMLAB_BRIDGE_PORT: String(port),
+        // ApiHawk cannot report the loaded ROM's path, so the bridge hashes
+        // this file to establish identity. Without it the bridge reports an
+        // empty hash and `connect` refuses.
+        ROMLAB_ROM_PATH: romPath,
+      },
     });
 
     this.process.on('error', (error) => {

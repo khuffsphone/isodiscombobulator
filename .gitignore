@@ -2,6 +2,10 @@ node_modules/
 dist/
 *.tsbuildinfo
 
+# .NET build output (bridge/ROMLab.BizHawk)
+bin/
+obj/
+
 # ROMLab never tracks operator ROMs, savestates, captures or extracted media.
 artifacts/
 private-repro/
